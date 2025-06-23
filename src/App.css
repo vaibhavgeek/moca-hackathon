@@ -127,7 +127,7 @@
   }
 }
 
-/* Dark mode support */
+/* Dark mode support - kept for future use but overridden to force light theme */
 @media (prefers-color-scheme: dark) {
   .bg-gradient-to-br {
     background: linear-gradient(to bottom right, #1e293b, #334155);
@@ -151,5 +151,32 @@
 
   .border-gray-300 {
     border-color: #4b5563;
+  }
+}
+
+/* Override dark mode to force light theme while keeping styles for future use */
+@media (prefers-color-scheme: dark) {
+  .bg-gradient-to-br {
+    background: linear-gradient(to bottom right, #dbeafe, #bfdbfe) !important;
+  }
+
+  .bg-white {
+    background-color: #ffffff !important;
+  }
+
+  .text-gray-900 {
+    color: #111827 !important;
+  }
+
+  .text-gray-600 {
+    color: #4b5563 !important;
+  }
+
+  .border-gray-200 {
+    border-color: #e5e7eb !important;
+  }
+
+  .border-gray-300 {
+    border-color: #d1d5db !important;
   }
 }

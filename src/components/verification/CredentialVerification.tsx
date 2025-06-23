@@ -1,13 +1,51 @@
 import { useState, useEffect, useRef } from "react";
-import { AirCredentialWidget, type QueryRequest, type VerificationResults } from "@mocanetwork/air-credential-sdk";
+import { AirCredentialWidget, type QueryRequest, type VerificationResults, type Language } from "@mocanetwork/air-credential-sdk";
 import "@mocanetwork/air-credential-sdk/dist/style.css";
+import { type AirService } from "@mocanetwork/airkit";
 
 // Environment variables for configuration
-const WIDGET_ENV = import.meta.env.VITE_WIDGET_ENV || "https://widget.air.xyz";
-const THEME = import.meta.env.VITE_THEME || "light";
+const WIDGET_URL = import.meta.env.VITE_WIDGET_URL || "https://test-unified-widget.zk.me";
+const API_URL = import.meta.env.VITE_API_URL || "https://test-agw.zk.me/unified";
 const LOCALE = import.meta.env.VITE_LOCALE || "en";
 
-const CredentialVerification = () => {
+interface CredentialVerificationProps {
+  airService: AirService | null;
+}
+
+const getVerifierAuthToken = async (verifierDid: string, apiKey: string): Promise<string | null> => {
+  try {
+    const response = await fetch(`${API_URL}/verifier/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "*/*",
+        "X-Test": "true",
+      },
+      body: JSON.stringify({
+        verifierDid: verifierDid,
+        authToken: apiKey,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API call failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.code === 80000000 && data.data && data.data.token) {
+      return data.data.token;
+    } else {
+      console.error("Failed to get verifier auth token from API:", data.msg || "Unknown error");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching verifier auth token:", error);
+    return null;
+  }
+};
+
+const CredentialVerification = ({ airService }: CredentialVerificationProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResults | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -15,12 +53,14 @@ const CredentialVerification = () => {
 
   // Configuration - these would typically come from environment variables or API
   const [config, setConfig] = useState({
-    verifierAuth: import.meta.env.VITE_VERIFIER_AUTH_TOKEN || "your-verifier-auth-token",
-    programId: import.meta.env.VITE_PROGRAM_ID || "program-123",
-    projectName: import.meta.env.VITE_PROJECT_NAME || "AirCredentialSdkDemo",
-    projectLogo: import.meta.env.VITE_PROJECT_LOGO || "https://via.placeholder.com/150x50/3B82F6/FFFFFF?text=AIR+Demo",
+    apiKey: import.meta.env.VITE_VERIFIER_API_KEY || "your-verifier-api-key",
+    verifierDid: import.meta.env.VITE_VERIFIER_DID || "did:example:verifier123",
+    programId: import.meta.env.VITE_PROGRAM_ID || "c21h8030hkl200012945Nw",
+    partnerId: import.meta.env.VITE_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45",
     redirectUrlForIssuer: import.meta.env.VITE_REDIRECT_URL_FOR_ISSUER || "",
   });
+
+  console.log("AirService in CredentialVerification:", airService);
 
   const handleConfigChange = (field: string, value: string) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
@@ -28,18 +68,27 @@ const CredentialVerification = () => {
 
   const generateWidget = async () => {
     try {
-      // Create the query request
+      // Step 1: Fetch the verifier auth token using the API key
+      const fetchedVerifierAuthToken = await getVerifierAuthToken(config.verifierDid, config.apiKey);
+
+      if (!fetchedVerifierAuthToken) {
+        setError("Failed to fetch verifier authentication token. Please check your API Key.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Create the query request with the fetched token
       const queryRequest: QueryRequest = {
         process: "Verify",
-        verifierAuth: config.verifierAuth,
+        verifierAuth: fetchedVerifierAuthToken,
         programId: config.programId,
       };
 
       // Create and configure the widget with proper options
-      widgetRef.current = new AirCredentialWidget(queryRequest, config.projectName, config.projectLogo, {
-        endpoint: WIDGET_ENV,
-        theme: THEME as "light" | "dark" | "auto",
-        locale: LOCALE as string,
+      widgetRef.current = new AirCredentialWidget(queryRequest, config.partnerId, {
+        endpoint: WIDGET_URL,
+        theme: "light", // currently only have light theme
+        locale: LOCALE as Language,
         redirectUrlForIssuer: config.redirectUrlForIssuer || undefined,
       });
 
@@ -176,15 +225,26 @@ const CredentialVerification = () => {
           <h3 className="text-xl font-semibold text-gray-900 mb-4">Configuration</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Verifier Auth Token</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Verifier DID</label>
               <input
-                type="password"
-                value={config.verifierAuth}
-                onChange={(e) => handleConfigChange("verifierAuth", e.target.value)}
+                type="text"
+                value={config.verifierDid}
+                onChange={(e) => handleConfigChange("verifierDid", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Your verifier auth token"
+                placeholder="Your verifier DID"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Verifier API Key</label>
+              <input
+                type="text"
+                value={config.apiKey}
+                onChange={(e) => handleConfigChange("apiKey", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Your verifier API key"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Program ID</label>
               <input
@@ -195,26 +255,18 @@ const CredentialVerification = () => {
                 placeholder="program-123"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Partner ID</label>
               <input
                 type="text"
-                value={config.projectName}
-                onChange={(e) => handleConfigChange("projectName", e.target.value)}
+                value={config.partnerId}
+                onChange={(e) => handleConfigChange("partnerId", e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Your Project Name"
+                placeholder="Your partner ID"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Project Logo URL</label>
-              <input
-                type="url"
-                value={config.projectLogo}
-                onChange={(e) => handleConfigChange("projectLogo", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="https://example.com/logo.png"
-              />
-            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Redirect URL for Issuer</label>
               <input
@@ -233,10 +285,10 @@ const CredentialVerification = () => {
           <h4 className="text-sm font-medium text-gray-900 mb-2">Environment Configuration:</h4>
           <div className="text-xs text-gray-700 space-y-1">
             <p>
-              <strong>Widget Environment:</strong> {WIDGET_ENV}
+              <strong>Widget Environment:</strong> {WIDGET_URL}
             </p>
             <p>
-              <strong>Theme:</strong> {THEME}
+              <strong>Theme:</strong> light
             </p>
             <p>
               <strong>Locale:</strong> {LOCALE}
@@ -285,10 +337,10 @@ const CredentialVerification = () => {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Launching...
+                Launching Widget...
               </span>
             ) : (
-              "Start Credential Verification"
+              "Start Credential Verification Widget"
             )}
           </button>
 
@@ -306,10 +358,10 @@ const CredentialVerification = () => {
         <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-md">
           <h4 className="text-sm font-medium text-blue-900 mb-2">Instructions:</h4>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Configure the verifier auth token and program ID</li>
+            <li>• Configure the verifier API key and program ID</li>
             <li>• Customize the project name and logo if needed</li>
             <li>• Set the redirect URL for issuer if required</li>
-            <li>• Click "Start Credential Verification" to start the process</li>
+            <li>• Click "Start Credential Verification Widget" to start the process</li>
             <li>• The widget will handle the credential verification flow</li>
             <li>• Review the verification results after completion</li>
           </ul>

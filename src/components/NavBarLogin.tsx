@@ -1,86 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { AirService, BUILD_ENV, type AirEventListener } from "@mocanetwork/airkit";
 
-// Use a default partner ID for the nav bar login - this could be configurable
-const partnerId = import.meta.env.VITE_NAV_PARTNER_ID || import.meta.env.VITE_ISSUER_PARTNER_ID || "your-partner-id";
-const buildEnv = import.meta.env.VITE_AIRKIT_BUILD_ENV || BUILD_ENV.STAGING;
-const enableLogging = true;
+interface NavBarLoginProps {
+  isLoading: boolean;
+  isInitialized: boolean;
+  isLoggedIn: boolean;
+  userAddress: string | null;
+  onLogin: () => void;
+  onLogout: () => void;
+}
 
-const NavBarLogin = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [airService, setAirService] = useState<AirService | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userAddress, setUserAddress] = useState<string | null>(null);
+const NavBarLogin = ({ isLoading, isInitialized, isLoggedIn, userAddress, onLogin, onLogout }: NavBarLoginProps) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const initializeAirService = async () => {
-    if (!partnerId || partnerId === "your-partner-id") {
-      console.warn("No valid Partner ID configured for nav bar login");
-      return;
-    }
-
-    try {
-      const service = new AirService({ partnerId });
-      await service.init({ buildEnv, enableLogging, skipRehydration: false });
-      setAirService(service);
-      setIsInitialized(true);
-      setIsLoggedIn(service.isLoggedIn);
-
-      // Get user address if already logged in
-      if (service.isLoggedIn && service.loginResult) {
-        const result = service.loginResult as any;
-        setUserAddress(result.address || result.userAddress || result.walletAddress || null);
-      }
-
-      const eventListener: AirEventListener = (data) => {
-        if (data.event === "logged_in") {
-          setIsLoggedIn(true);
-          // Get user address from login result
-          if (data.result) {
-            const result = data.result as any;
-            setUserAddress(result.address || result.userAddress || result.walletAddress || null);
-          }
-        } else if (data.event === "logged_out") {
-          setIsLoggedIn(false);
-          setUserAddress(null);
-        }
-      };
-      service.on(eventListener);
-    } catch (err) {
-      console.error("Failed to initialize AIRKit service in nav bar:", err);
-    }
-  };
-
-  const handleLogin = async () => {
-    if (!airService) return;
-
-    setIsLoading(true);
-    try {
-      const loginResult = await airService.login();
-      // Get user address from login result
-      if (loginResult) {
-        const result = loginResult as any;
-        setUserAddress(result.address || result.userAddress || result.walletAddress || null);
-      }
-    } catch (err) {
-      console.error("Login failed:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    if (!airService) return;
-
-    try {
-      await airService.logout();
-      setUserAddress(null);
-      setShowDropdown(false);
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
+  const handleLogout = () => {
+    onLogout();
+    setShowDropdown(false);
   };
 
   // Handle click outside to close dropdown
@@ -99,15 +34,6 @@ const NavBarLogin = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDropdown]);
-
-  useEffect(() => {
-    initializeAirService();
-    return () => {
-      if (airService) {
-        airService.cleanUp();
-      }
-    };
-  }, []);
 
   if (!isInitialized) {
     return (
@@ -138,8 +64,7 @@ const NavBarLogin = () => {
         <div className="flex items-center space-x-2">
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-700">Connected</span>
-            {userAddress && <span className="text-xs font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">{formatAddress(userAddress)}</span>}
+            {userAddress && <span className="text-xs font-mono text-gray-600 px-2 py-1 rounded">{formatAddress(userAddress)}</span>}
           </div>
           <button
             onClick={() => setShowDropdown(!showDropdown)}
@@ -152,7 +77,7 @@ const NavBarLogin = () => {
         </div>
       ) : (
         <button
-          onClick={handleLogin}
+          onClick={onLogin}
           disabled={isLoading}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
