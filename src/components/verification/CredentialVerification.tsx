@@ -5,8 +5,8 @@ import { type AirService, BUILD_ENV } from "@mocanetwork/airkit";
 import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 
 // Environment variables for configuration
-const WIDGET_URL = import.meta.env.VITE_WIDGET_URL || "https://test-unified-widget.zk.me";
-const API_URL = import.meta.env.VITE_API_URL || "https://test-agw.zk.me/unified";
+const WIDGET_URL = import.meta.env.VITE_WIDGET_URL || "";
+const API_URL = import.meta.env.VITE_API_URL || "";
 const LOCALE = import.meta.env.VITE_LOCALE || "en";
 
 interface CredentialVerificationProps {
