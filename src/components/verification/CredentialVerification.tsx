@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { AirCredentialWidget, type QueryRequest, type VerificationResults, type Language } from "@mocanetwork/air-credential-sdk";
 import "@mocanetwork/air-credential-sdk/dist/style.css";
-import { type AirService } from "@mocanetwork/airkit";
+import { type AirService, BUILD_ENV } from "@mocanetwork/airkit";
+import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 
 // Environment variables for configuration
 const WIDGET_URL = import.meta.env.VITE_WIDGET_URL || "https://test-unified-widget.zk.me";
@@ -11,6 +12,7 @@ const LOCALE = import.meta.env.VITE_LOCALE || "en";
 interface CredentialVerificationProps {
   airService: AirService | null;
   isLoggedIn: boolean;
+  airKitBuildEnv: BUILD_ENV_TYPE;
 }
 
 const getVerifierAuthToken = async (verifierDid: string, apiKey: string): Promise<string | null> => {
@@ -46,7 +48,7 @@ const getVerifierAuthToken = async (verifierDid: string, apiKey: string): Promis
   }
 };
 
-const CredentialVerification = ({ airService, isLoggedIn }: CredentialVerificationProps) => {
+const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv }: CredentialVerificationProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResults | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +90,7 @@ const CredentialVerification = ({ airService, isLoggedIn }: CredentialVerificati
       // Create and configure the widget with proper options
       widgetRef.current = new AirCredentialWidget(queryRequest, config.partnerId, {
         endpoint: WIDGET_URL,
+        airKitBuildEnv: airKitBuildEnv || BUILD_ENV.STAGING,
         theme: "light", // currently only have light theme
         locale: LOCALE as Language,
         redirectUrlForIssuer: config.redirectUrlForIssuer || undefined,

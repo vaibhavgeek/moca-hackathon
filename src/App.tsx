@@ -4,7 +4,7 @@ import "./App.css";
 import CredentialIssuance from "./components/issuance/CredentialIssuance";
 import CredentialVerification from "./components/verification/CredentialVerification";
 import NavBarLogin from "./components/NavBarLogin";
-import { AirService, BUILD_ENV, type AirEventListener } from "@mocanetwork/airkit";
+import { AirService, BUILD_ENV, type AirEventListener, type BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 
 // Get partner ID from environment variables
 const NAV_PARTNER_ID = import.meta.env.VITE_NAV_PARTNER_ID || import.meta.env.VITE_ISSUER_PARTNER_ID || "your-partner-id";
@@ -34,7 +34,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userAddress, setUserAddress] = useState<string | null>(null);
-  const [currentEnv, setCurrentEnv] = useState<string>(BUILD_ENV.STAGING);
+  const [currentEnv, setCurrentEnv] = useState<BUILD_ENV_TYPE>(BUILD_ENV.STAGING);
 
   const initializeAirService = async (env = currentEnv) => {
     if (!NAV_PARTNER_ID || NAV_PARTNER_ID === "your-partner-id") {
@@ -174,7 +174,7 @@ function App() {
                   onLogin={handleLogin}
                   onLogout={handleLogout}
                   currentEnv={currentEnv}
-                  setCurrentEnv={setCurrentEnv}
+                  setCurrentEnv={(env) => setCurrentEnv(env as BUILD_ENV_TYPE)}
                   envOptions={ENV_OPTIONS}
                 />
               </div>
@@ -189,10 +189,10 @@ function App() {
             <Route path="/" element={<Navigate to="/issue" replace />} />
 
             {/* Issuance Flow */}
-            <Route path="/issue" element={<CredentialIssuance airService={airService} isLoggedIn={isLoggedIn} />} />
+            <Route path="/issue" element={<CredentialIssuance airService={airService} isLoggedIn={isLoggedIn} airKitBuildEnv={currentEnv} />} />
 
             {/* Verification Flow */}
-            <Route path="/verify" element={<CredentialVerification airService={airService} isLoggedIn={isLoggedIn} />} />
+            <Route path="/verify" element={<CredentialVerification airService={airService} isLoggedIn={isLoggedIn} airKitBuildEnv={currentEnv} />} />
           </Routes>
         </main>
 

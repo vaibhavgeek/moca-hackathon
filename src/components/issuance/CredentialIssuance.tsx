@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { AirCredentialWidget, type ClaimRequest, type JsonDocumentObject, type Language } from "@mocanetwork/air-credential-sdk";
 import "@mocanetwork/air-credential-sdk/dist/style.css";
-import { type AirService } from "@mocanetwork/airkit";
+import { AirService, BUILD_ENV } from "@mocanetwork/airkit";
+import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 
 // Environment variables for configuration
 const WIDGET_URL = import.meta.env.VITE_WIDGET_URL || "https://test-unified-widget.zk.me";
@@ -18,6 +19,7 @@ interface CredentialField {
 interface CredentialIssuanceProps {
   airService: AirService | null;
   isLoggedIn: boolean;
+  airKitBuildEnv: BUILD_ENV_TYPE;
 }
 
 const getIssuerAuthToken = async (issuerDid: string, apiKey: string): Promise<string | null> => {
@@ -53,7 +55,7 @@ const getIssuerAuthToken = async (issuerDid: string, apiKey: string): Promise<st
   }
 };
 
-const CredentialIssuance = ({ airService, isLoggedIn }: CredentialIssuanceProps) => {
+const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: CredentialIssuanceProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -174,6 +176,7 @@ const CredentialIssuance = ({ airService, isLoggedIn }: CredentialIssuanceProps)
       // Create and configure the widget with proper options
       widgetRef.current = new AirCredentialWidget(claimRequest, config.partnerId, {
         endpoint: rp?.urlWithToken,
+        airKitBuildEnv: airKitBuildEnv || BUILD_ENV.STAGING,
         theme: "light", // currently only have light theme
         locale: LOCALE as Language,
       });
