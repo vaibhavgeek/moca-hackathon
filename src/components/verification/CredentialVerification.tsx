@@ -10,6 +10,7 @@ const LOCALE = import.meta.env.VITE_LOCALE || "en";
 
 interface CredentialVerificationProps {
   airService: AirService | null;
+  isLoggedIn: boolean;
 }
 
 const getVerifierAuthToken = async (verifierDid: string, apiKey: string): Promise<string | null> => {
@@ -45,7 +46,7 @@ const getVerifierAuthToken = async (verifierDid: string, apiKey: string): Promis
   }
 };
 
-const CredentialVerification = ({ airService }: CredentialVerificationProps) => {
+const CredentialVerification = ({ airService, isLoggedIn }: CredentialVerificationProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResults | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,9 +56,9 @@ const CredentialVerification = ({ airService }: CredentialVerificationProps) => 
   const [config, setConfig] = useState({
     apiKey: import.meta.env.VITE_VERIFIER_API_KEY || "your-verifier-api-key",
     verifierDid: import.meta.env.VITE_VERIFIER_DID || "did:example:verifier123",
-    programId: import.meta.env.VITE_PROGRAM_ID || "c21h8030hkl200012945Nw",
+    programId: import.meta.env.VITE_PROGRAM_ID || "c21hc030kb5iu0030224Qs",
     partnerId: import.meta.env.VITE_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45",
-    redirectUrlForIssuer: import.meta.env.VITE_REDIRECT_URL_FOR_ISSUER || "",
+    redirectUrlForIssuer: import.meta.env.VITE_REDIRECT_URL_FOR_ISSUER || "http://localhost:5173/issue",
   });
 
   console.log("AirService in CredentialVerification:", airService);
@@ -230,7 +231,7 @@ const CredentialVerification = ({ airService }: CredentialVerificationProps) => 
                 type="text"
                 value={config.verifierDid}
                 onChange={(e) => handleConfigChange("verifierDid", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Your verifier DID"
               />
             </div>
@@ -240,7 +241,7 @@ const CredentialVerification = ({ airService }: CredentialVerificationProps) => 
                 type="text"
                 value={config.apiKey}
                 onChange={(e) => handleConfigChange("apiKey", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Your verifier API key"
               />
             </div>
@@ -251,7 +252,7 @@ const CredentialVerification = ({ airService }: CredentialVerificationProps) => 
                 type="text"
                 value={config.programId}
                 onChange={(e) => handleConfigChange("programId", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="program-123"
               />
             </div>
@@ -262,7 +263,7 @@ const CredentialVerification = ({ airService }: CredentialVerificationProps) => 
                 type="text"
                 value={config.partnerId}
                 onChange={(e) => handleConfigChange("partnerId", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Your partner ID"
               />
             </div>
@@ -273,7 +274,7 @@ const CredentialVerification = ({ airService }: CredentialVerificationProps) => 
                 type="url"
                 value={config.redirectUrlForIssuer}
                 onChange={(e) => handleConfigChange("redirectUrlForIssuer", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="https://example.com/issue-credential"
               />
             </div>
@@ -324,8 +325,8 @@ const CredentialVerification = ({ airService }: CredentialVerificationProps) => 
         <div className="flex space-x-4">
           <button
             onClick={handleVerifyCredential}
-            disabled={isLoading}
-            className="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={isLoading || !isLoggedIn}
+            className="flex-1 bg-brand-600 text-white px-6 py-3 rounded-md font-medium hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
@@ -347,7 +348,7 @@ const CredentialVerification = ({ airService }: CredentialVerificationProps) => 
           {verificationResult && (
             <button
               onClick={handleReset}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors"
             >
               Reset
             </button>
@@ -359,7 +360,7 @@ const CredentialVerification = ({ airService }: CredentialVerificationProps) => 
           <h4 className="text-sm font-medium text-blue-900 mb-2">Instructions:</h4>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• Configure the verifier API key and program ID</li>
-            <li>• Customize the project name and logo if needed</li>
+            <li>• Set the partner id</li>
             <li>• Set the redirect URL for issuer if required</li>
             <li>• Click "Start Credential Verification Widget" to start the process</li>
             <li>• The widget will handle the credential verification flow</li>

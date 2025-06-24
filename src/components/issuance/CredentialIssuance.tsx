@@ -17,6 +17,7 @@ interface CredentialField {
 
 interface CredentialIssuanceProps {
   airService: AirService | null;
+  isLoggedIn: boolean;
 }
 
 const getIssuerAuthToken = async (issuerDid: string, apiKey: string): Promise<string | null> => {
@@ -52,7 +53,7 @@ const getIssuerAuthToken = async (issuerDid: string, apiKey: string): Promise<st
   }
 };
 
-const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
+const CredentialIssuance = ({ airService, isLoggedIn }: CredentialIssuanceProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +63,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
   const [config, setConfig] = useState({
     issuerDid: import.meta.env.VITE_ISSUER_DID || "did:example:issuer123",
     apiKey: import.meta.env.VITE_ISSUER_API_KEY || "your-issuer-api-key", // api key
-    credentialId: import.meta.env.VITE_CREDENTIAL_ID || "c21h60g0go7xx0047227d9",
+    credentialId: import.meta.env.VITE_CREDENTIAL_ID || "c21hc0g0joevn0015479aK",
     partnerId: import.meta.env.VITE_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45",
   });
 
@@ -146,6 +147,8 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
 
       const credentialSubject = convertFieldsToCredentialSubject();
 
+      console.log("credentialSubject", credentialSubject);
+
       // Create the claim request with the fetched token
       const claimRequest: ClaimRequest = {
         process: "Issue",
@@ -161,9 +164,16 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
 
       console.log("urlWithToken", rp, rp?.urlWithToken);
 
+      if (!rp?.urlWithToken) {
+        console.warn("Failed to get URL with token. Please check your partner ID.");
+        setError("Failed to get URL with token. Please check your partner ID.");
+        setIsLoading(false);
+        return;
+      }
+
       // Create and configure the widget with proper options
       widgetRef.current = new AirCredentialWidget(claimRequest, config.partnerId, {
-        endpoint: rp?.urlWithToken || WIDGET_URL,
+        endpoint: rp?.urlWithToken,
         theme: "light", // currently only have light theme
         locale: LOCALE as Language,
       });
@@ -191,10 +201,8 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
     setIsSuccess(false);
 
     try {
-      // Generate widget if not already created
-      if (!widgetRef.current) {
-        await generateWidget();
-      }
+      //generate everytime to ensure the partner token passing in correctly
+      await generateWidget();
 
       // Start the widget
       if (widgetRef.current) {
@@ -230,7 +238,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
           <select
             value={field.value.toString()}
             onChange={(e) => updateCredentialField(field.id, { value: e.target.value === "true" })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             <option value="true">True</option>
             <option value="false">False</option>
@@ -242,7 +250,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
             type="date"
             value={typeof field.value === "string" ? field.value : ""}
             onChange={(e) => updateCredentialField(field.id, { value: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         );
       case "number":
@@ -251,7 +259,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
             type="number"
             value={field.value.toString()}
             onChange={(e) => updateCredentialField(field.id, { value: parseFloat(e.target.value) || 0 })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         );
       default:
@@ -260,7 +268,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
             type="text"
             value={field.value.toString()}
             onChange={(e) => updateCredentialField(field.id, { value: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
             placeholder="Enter value"
           />
         );
@@ -288,7 +296,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
                 type="text"
                 value={config.issuerDid}
                 onChange={(e) => handleConfigChange("issuerDid", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="did:example:issuer123"
               />
             </div>
@@ -298,7 +306,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
                 type="text"
                 value={config.apiKey}
                 onChange={(e) => handleConfigChange("apiKey", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Your issuer API key"
               />
             </div>
@@ -308,7 +316,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
                 type="text"
                 value={config.credentialId}
                 onChange={(e) => handleConfigChange("credentialId", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="credential-type-123"
               />
             </div>
@@ -318,7 +326,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
                 type="text"
                 value={config.partnerId}
                 onChange={(e) => handleConfigChange("partnerId", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="Your partner ID"
               />
             </div>
@@ -331,7 +339,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
             <h3 className="text-xl font-semibold text-gray-900">Credential Subject</h3>
             <button
               onClick={addCredentialField}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -356,7 +364,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
                         type="text"
                         value={field.name}
                         onChange={(e) => updateCredentialField(field.id, { name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
                         placeholder="e.g., name, email, age"
                       />
                     </div>
@@ -365,7 +373,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
                       <select
                         value={field.type}
                         onChange={(e) => updateCredentialField(field.id, { type: e.target.value as "string" | "number" | "boolean" | "date" })}
-                        className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 "
+                        className="w-full h-[42px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 "
                       >
                         <option value="string">String</option>
                         <option value="number">Number</option>
@@ -438,8 +446,8 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
         <div className="flex space-x-4">
           <button
             onClick={handleIssueCredential}
-            disabled={isLoading}
-            className="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={isLoading || !isLoggedIn}
+            className="flex-1 bg-brand-600 text-white px-6 py-3 rounded-md font-medium hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
@@ -461,7 +469,7 @@ const CredentialIssuance = ({ airService }: CredentialIssuanceProps) => {
           {isSuccess && (
             <button
               onClick={handleReset}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors"
             >
               Reset
             </button>
