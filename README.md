@@ -90,13 +90,17 @@ For production use, consider setting up environment variables for sensitive conf
 ```bash
 # .env.local
 VITE_ISSUER_DID=your-issuer-did
-VITE_ISSUER_AUTH=your-issuer-auth-token
-VITE_VERIFIER_AUTH=your-verifier-auth-token
+VITE_ISSUER_API_KEY=your-issuer-api-key
+
+VITE_VERIFIER_DID=your-verifier-did
+VITE_VERIFIER_API_KEY=your-verifier-api-key
+
+
 VITE_PROGRAM_ID=your-program-id
 VITE_CREDENTIAL_ID=your-credential-id
+
 VITE_ISSUER_PARTNER_ID=issuer-partner-id
 VITE_VERIFIER_PARTNER_ID=verifier-partner-id
-VITE_AIRKIT_BUILD_ENV=uat
 ```
 
 ### SDK Configuration
