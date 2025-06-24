@@ -279,19 +279,19 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
   };
 
   return (
-    <div className="flex-1 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-6 sm:p-8">
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Credential Issuance</h2>
-          <p className="text-gray-600">
+    <div className="flex-1 p-2 sm:p-4 lg:p-8">
+      <div className="w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl sm:mx-auto bg-white rounded-lg shadow-lg p-2 sm:p-6 lg:p-8">
+        <div className="mb-4 sm:mb-6 lg:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">Credential Issuance</h2>
+          <p className="text-gray-600 text-sm sm:text-base">
             Issue digital credentials to users using the AIR Credential SDK. Configure the issuance parameters below and Start the widget to begin the
             process.
           </p>
         </div>
 
         {/* Configuration Section */}
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4">Configuration</h3>
+        <div className="mb-6 sm:mb-8">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-4">Configuration</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Issuer DID</label>
@@ -337,12 +337,12 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
         </div>
 
         {/* Dynamic Credential Subject Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-gray-900">Credential Subject</h3>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 sm:mb-4 gap-2 sm:gap-0">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Credential Subject</h3>
             <button
               onClick={addCredentialField}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+              className="inline-flex items-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -417,8 +417,8 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
         </div>
 
         {/* Environment Info */}
-        <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-md">
-          <h4 className="text-sm font-medium text-gray-900 mb-2">Environment Configuration:</h4>
+        <div className="mb-6 sm:mb-8 p-2 sm:p-4 bg-gray-50 border border-gray-200 rounded-md">
+          <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Environment Configuration:</h4>
           <div className="text-xs text-gray-700 space-y-1">
             <p>
               <strong>Widget Environment:</strong> {WIDGET_URL}
@@ -434,23 +434,23 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
 
         {/* Status Messages */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-800">{error}</p>
+          <div className="mb-4 sm:mb-6 p-2 sm:p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-red-800 text-xs sm:text-base">{error}</p>
           </div>
         )}
 
         {isSuccess && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-green-800">✅ Credential issuance completed successfully!</p>
+          <div className="mb-4 sm:mb-6 p-2 sm:p-4 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-green-800 text-xs sm:text-base">✅ Credential issuance completed successfully!</p>
           </div>
         )}
 
         {/* Action Buttons */}
-        <div className="flex space-x-4">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
           <button
             onClick={handleIssueCredential}
             disabled={isLoading || !isLoggedIn}
-            className="flex-1 bg-brand-600 text-white px-6 py-3 rounded-md font-medium hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full sm:flex-1 bg-brand-600 text-white px-4 sm:px-6 py-3 rounded-md font-medium hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
@@ -472,7 +472,7 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
           {isSuccess && (
             <button
               onClick={handleReset}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors"
+              className="w-full sm:w-auto px-4 sm:px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors"
             >
               Reset
             </button>
@@ -480,9 +480,10 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
         </div>
 
         {/* Instructions */}
-        <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-md">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">Instructions:</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
+        <div className="mt-6 sm:mt-8 p-2 sm:p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <h4 className="text-xs sm:text-sm font-medium text-blue-900 mb-1 sm:mb-2">Instructions:</h4>
+          <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
+            <li>• Need to whitelist the cross partner domain in Airkit </li>
             <li>• Configure the issuer DID, API key, and credential ID</li>
             <li>• Add credential subject fields using the "Add Field" button</li>
             <li>• Set field name, type (string, number, boolean, date), and value</li>
