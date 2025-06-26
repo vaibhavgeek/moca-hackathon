@@ -3,21 +3,22 @@ import { AirCredentialWidget, type QueryRequest, type VerificationResults, type 
 import "@mocanetwork/air-credential-sdk/dist/style.css";
 import { type AirService, BUILD_ENV } from "@mocanetwork/airkit";
 import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
+import type { EnvironmentConfig } from "../../config/environments";
 
 // Environment variables for configuration
-const WIDGET_URL = import.meta.env.VITE_WIDGET_URL || "";
-const API_URL = import.meta.env.VITE_API_URL || "";
 const LOCALE = import.meta.env.VITE_LOCALE || "en";
 
 interface CredentialVerificationProps {
   airService: AirService | null;
   isLoggedIn: boolean;
   airKitBuildEnv: BUILD_ENV_TYPE;
+  partnerId: string;
+  environmentConfig: EnvironmentConfig;
 }
 
-const getVerifierAuthToken = async (verifierDid: string, apiKey: string): Promise<string | null> => {
+const getVerifierAuthToken = async (verifierDid: string, apiKey: string, apiUrl: string): Promise<string | null> => {
   try {
-    const response = await fetch(`${API_URL}/verifier/login`, {
+    const response = await fetch(`${apiUrl}/verifier/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -48,7 +49,7 @@ const getVerifierAuthToken = async (verifierDid: string, apiKey: string): Promis
   }
 };
 
-const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv }: CredentialVerificationProps) => {
+const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partnerId, environmentConfig }: CredentialVerificationProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResults | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +60,6 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv }: Cred
     apiKey: import.meta.env.VITE_VERIFIER_API_KEY || "your-verifier-api-key",
     verifierDid: import.meta.env.VITE_VERIFIER_DID || "did:example:verifier123",
     programId: import.meta.env.VITE_PROGRAM_ID || "c21hc030kb5iu0030224Qs",
-    partnerId: import.meta.env.VITE_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45",
     redirectUrlForIssuer: import.meta.env.VITE_REDIRECT_URL_FOR_ISSUER || "http://localhost:5173/issue",
   });
 
@@ -72,7 +72,7 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv }: Cred
   const generateWidget = async () => {
     try {
       // Step 1: Fetch the verifier auth token using the API key
-      const fetchedVerifierAuthToken = await getVerifierAuthToken(config.verifierDid, config.apiKey);
+      const fetchedVerifierAuthToken = await getVerifierAuthToken(config.verifierDid, config.apiKey, environmentConfig.apiUrl);
 
       if (!fetchedVerifierAuthToken) {
         setError("Failed to fetch verifier authentication token. Please check your API Key.");
@@ -88,8 +88,8 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv }: Cred
       };
 
       // Create and configure the widget with proper options
-      widgetRef.current = new AirCredentialWidget(queryRequest, config.partnerId, {
-        endpoint: WIDGET_URL,
+      widgetRef.current = new AirCredentialWidget(queryRequest, partnerId, {
+        endpoint: environmentConfig.widgetUrl,
         airKitBuildEnv: airKitBuildEnv || BUILD_ENV.STAGING,
         theme: "light", // currently only have light theme
         locale: LOCALE as Language,
@@ -261,13 +261,13 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv }: Cred
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Partner ID</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Partner ID (from NavBar)</label>
               <input
                 type="text"
-                value={config.partnerId}
-                onChange={(e) => handleConfigChange("partnerId", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
-                placeholder="Your partner ID"
+                value={partnerId}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+                placeholder="Partner ID from NavBar"
               />
             </div>
 
@@ -289,7 +289,10 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv }: Cred
           <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Environment Configuration:</h4>
           <div className="text-xs text-gray-700 space-y-1">
             <p>
-              <strong>Widget Environment:</strong> {WIDGET_URL}
+              <strong>Widget URL:</strong> {environmentConfig.widgetUrl}
+            </p>
+            <p>
+              <strong>API URL:</strong> {environmentConfig.apiUrl}
             </p>
             <p>
               <strong>Theme:</strong> light

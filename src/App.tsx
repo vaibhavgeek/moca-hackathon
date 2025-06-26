@@ -5,9 +5,11 @@ import CredentialIssuance from "./components/issuance/CredentialIssuance";
 import CredentialVerification from "./components/verification/CredentialVerification";
 import NavBarLogin from "./components/NavBarLogin";
 import { AirService, BUILD_ENV, type AirEventListener, type BUILD_ENV_TYPE } from "@mocanetwork/airkit";
+import { getEnvironmentConfig, type EnvironmentConfig } from "./config/environments";
 
-// Get partner ID from environment variables
-const NAV_PARTNER_ID = import.meta.env.VITE_NAV_PARTNER_ID || import.meta.env.VITE_ISSUER_PARTNER_ID || "your-partner-id";
+// Get partner IDs from environment variables
+const ISSUER_PARTNER_ID = import.meta.env.VITE_ISSUER_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45";
+const VERIFIER_PARTNER_ID = import.meta.env.VITE_VERIFIER_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45";
 const enableLogging = true;
 
 const ENV_OPTIONS = [
@@ -28,6 +30,16 @@ const FlowTitle = () => {
   return <span>AIR Credential Demo</span>;
 };
 
+// Function to get default partner ID based on current route
+const getDefaultPartnerId = (pathname: string): string => {
+  if (pathname === "/issue") {
+    return ISSUER_PARTNER_ID;
+  } else if (pathname === "/verify") {
+    return VERIFIER_PARTNER_ID;
+  }
+  return ISSUER_PARTNER_ID; // Default to issuer for root route
+};
+
 function AppRoutes({
   airService,
   isInitialized,
@@ -38,6 +50,9 @@ function AppRoutes({
   handleLogout,
   currentEnv,
   setCurrentEnv,
+  partnerId,
+  setPartnerId,
+  environmentConfig,
 }: {
   airService: AirService | null;
   isInitialized: boolean;
@@ -48,8 +63,18 @@ function AppRoutes({
   handleLogout: () => void;
   currentEnv: BUILD_ENV_TYPE;
   setCurrentEnv: (env: string) => void;
+  partnerId: string;
+  setPartnerId: (partnerId: string) => void;
+  environmentConfig: EnvironmentConfig;
 }) {
   const location = useLocation();
+
+  // Update partner ID when route changes
+  useEffect(() => {
+    const defaultPartnerId = getDefaultPartnerId(location.pathname);
+    setPartnerId(defaultPartnerId);
+  }, [location.pathname, setPartnerId]);
+
   return (
     <div
       className={
@@ -71,7 +96,13 @@ function AppRoutes({
               </h1>
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-gray-500">Partner ID:</span>
-                <span className="text-xs font-mono text-brand-700 bg-brand-50 px-2 py-1 rounded">{NAV_PARTNER_ID}</span>
+                <input
+                  type="text"
+                  value={partnerId}
+                  onChange={(e) => setPartnerId(e.target.value)}
+                  className="text-xs font-mono text-brand-700 bg-brand-50 px-2 py-1 rounded border border-transparent focus:border-brand-300 focus:outline-none focus:ring-1 focus:ring-brand-300 min-w-[200px]"
+                  placeholder="Enter Partner ID"
+                />
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-8 w-full sm:w-auto">
@@ -118,10 +149,32 @@ function AppRoutes({
           <Route path="/" element={<Navigate to="/issue" replace />} />
 
           {/* Issuance Flow */}
-          <Route path="/issue" element={<CredentialIssuance airService={airService} isLoggedIn={isLoggedIn} airKitBuildEnv={currentEnv} />} />
+          <Route
+            path="/issue"
+            element={
+              <CredentialIssuance
+                airService={airService}
+                isLoggedIn={isLoggedIn}
+                airKitBuildEnv={currentEnv}
+                partnerId={partnerId}
+                environmentConfig={environmentConfig}
+              />
+            }
+          />
 
           {/* Verification Flow */}
-          <Route path="/verify" element={<CredentialVerification airService={airService} isLoggedIn={isLoggedIn} airKitBuildEnv={currentEnv} />} />
+          <Route
+            path="/verify"
+            element={
+              <CredentialVerification
+                airService={airService}
+                isLoggedIn={isLoggedIn}
+                airKitBuildEnv={currentEnv}
+                partnerId={partnerId}
+                environmentConfig={environmentConfig}
+              />
+            }
+          />
         </Routes>
       </main>
 
@@ -141,17 +194,21 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userAddress, setUserAddress] = useState<string | null>(null);
-  const [currentEnv, setCurrentEnv] = useState<BUILD_ENV_TYPE>(BUILD_ENV.STAGING);
+  const [currentEnv, setCurrentEnv] = useState<BUILD_ENV_TYPE>(BUILD_ENV.SANDBOX);
+  const [partnerId, setPartnerId] = useState<string>(ISSUER_PARTNER_ID);
 
-  const initializeAirService = async (env: BUILD_ENV_TYPE = currentEnv) => {
-    if (!NAV_PARTNER_ID || NAV_PARTNER_ID === "your-partner-id") {
+  // Get environment config based on current environment
+  const environmentConfig = getEnvironmentConfig(currentEnv);
+
+  const initializeAirService = async (env: BUILD_ENV_TYPE = currentEnv, partnerIdToUse: string = partnerId) => {
+    if (!partnerIdToUse || partnerIdToUse === "your-partner-id") {
       console.warn("No valid Partner ID configured for nav bar login");
       setIsInitialized(true); // Set to true to prevent infinite loading
       return;
     }
 
     try {
-      const service = new AirService({ partnerId: NAV_PARTNER_ID });
+      const service = new AirService({ partnerId: partnerIdToUse });
       await service.init({ buildEnv: env as (typeof BUILD_ENV)[keyof typeof BUILD_ENV], enableLogging, skipRehydration: false });
       setAirService(service);
       setIsInitialized(true);
@@ -192,16 +249,17 @@ function App() {
     }
   };
 
+  // Re-initialize AIRKit when partner ID or environment changes
   useEffect(() => {
-    initializeAirService(currentEnv);
+    initializeAirService(currentEnv, partnerId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentEnv]);
+  }, [currentEnv, partnerId]);
 
   useEffect(() => {
     // Only run on mount for initial load
-    // (the above effect will handle env changes)
+    // (the above effect will handle env and partner ID changes)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    initializeAirService(currentEnv);
+    initializeAirService(currentEnv, partnerId);
     return () => {
       if (airService) {
         airService.cleanUp();
@@ -250,6 +308,9 @@ function App() {
         handleLogout={handleLogout}
         currentEnv={currentEnv}
         setCurrentEnv={(env) => setCurrentEnv(env as BUILD_ENV_TYPE)}
+        partnerId={partnerId}
+        setPartnerId={setPartnerId}
+        environmentConfig={environmentConfig}
       />
     </Router>
   );
