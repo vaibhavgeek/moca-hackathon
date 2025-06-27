@@ -89,19 +89,41 @@ For production use, consider setting up environment variables for sensitive conf
 
 ```bash
 # .env.local
+
+# Issuance Configuration
 VITE_ISSUER_DID=your-issuer-did
 VITE_ISSUER_API_KEY=your-issuer-api-key
+VITE_CREDENTIAL_ID=your-credential-id
+VITE_ISSUER_PARTNER_ID=issuer-partner-id
 
+# Verification Configuration
 VITE_VERIFIER_DID=your-verifier-did
 VITE_VERIFIER_API_KEY=your-verifier-api-key
-
-
 VITE_PROGRAM_ID=your-program-id
-VITE_CREDENTIAL_ID=your-credential-id
-
-VITE_ISSUER_PARTNER_ID=issuer-partner-id
 VITE_VERIFIER_PARTNER_ID=verifier-partner-id
+
+# General Configuration
+VITE_LOCALE=en
+VITE_REDIRECT_URL_FOR_ISSUER=http://localhost:5173/issue
 ```
+
+### Environment-Based Configuration
+
+The application uses environment-based configuration for Widget and API URLs:
+
+- **Staging Environment**: Uses staging URLs for widget and API endpoints
+- **Sandbox Environment**: Uses sandbox URLs for widget and API endpoints
+
+The URLs are configured in `src/config/environments.ts` and automatically switch based on the environment selected in the NavBar dropdown.
+
+### Partner ID Management
+
+The application automatically switches Partner IDs based on the current route:
+
+- **Issuance Route** (`/issue`): Uses `VITE_ISSUER_PARTNER_ID` as default
+- **Verification Route** (`/verify`): Uses `VITE_VERIFIER_PARTNER_ID` as default
+
+The Partner ID is displayed and editable in the NavBar. When you navigate between Issuance and Verification flows, the Partner ID will automatically update to the appropriate default for that flow. You can still manually edit the Partner ID in the NavBar to test different configurations.
 
 ### SDK Configuration
 

@@ -3,10 +3,9 @@ import { AirCredentialWidget, type ClaimRequest, type JsonDocumentObject, type L
 import "@mocanetwork/air-credential-sdk/dist/style.css";
 import { AirService, BUILD_ENV } from "@mocanetwork/airkit";
 import type { BUILD_ENV_TYPE } from "@mocanetwork/airkit";
+import type { EnvironmentConfig } from "../../config/environments";
 
 // Environment variables for configuration
-const WIDGET_URL = import.meta.env.VITE_WIDGET_URL || "";
-const API_URL = import.meta.env.VITE_API_URL || "";
 const LOCALE = import.meta.env.VITE_LOCALE || "en";
 
 interface CredentialField {
@@ -20,11 +19,13 @@ interface CredentialIssuanceProps {
   airService: AirService | null;
   isLoggedIn: boolean;
   airKitBuildEnv: BUILD_ENV_TYPE;
+  partnerId: string;
+  environmentConfig: EnvironmentConfig;
 }
 
-const getIssuerAuthToken = async (issuerDid: string, apiKey: string): Promise<string | null> => {
+const getIssuerAuthToken = async (issuerDid: string, apiKey: string, apiUrl: string): Promise<string | null> => {
   try {
-    const response = await fetch(`${API_URL}/issuer/login`, {
+    const response = await fetch(`${apiUrl}/issuer/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -55,7 +56,7 @@ const getIssuerAuthToken = async (issuerDid: string, apiKey: string): Promise<st
   }
 };
 
-const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: CredentialIssuanceProps) => {
+const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv, partnerId, environmentConfig }: CredentialIssuanceProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +67,6 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
     issuerDid: import.meta.env.VITE_ISSUER_DID || "did:example:issuer123",
     apiKey: import.meta.env.VITE_ISSUER_API_KEY || "your-issuer-api-key", // api key
     credentialId: import.meta.env.VITE_CREDENTIAL_ID || "c21hc0g0joevn0015479aK",
-    partnerId: import.meta.env.VITE_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45",
   });
 
   // Dynamic credential subject fields
@@ -139,7 +139,7 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
   const generateWidget = async () => {
     try {
       // Step 1: Fetch the issuer auth token using the API key
-      const fetchedIssuerAuthToken = await getIssuerAuthToken(config.issuerDid, config.apiKey);
+      const fetchedIssuerAuthToken = await getIssuerAuthToken(config.issuerDid, config.apiKey, environmentConfig.apiUrl);
 
       if (!fetchedIssuerAuthToken) {
         setError("Failed to fetch issuer authentication token. Please check your DID and API Key.");
@@ -160,7 +160,7 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
         credentialSubject: credentialSubject,
       };
 
-      const rp = await airService?.goToPartner(WIDGET_URL).catch((err) => {
+      const rp = await airService?.goToPartner(environmentConfig.widgetUrl).catch((err) => {
         console.error("Error getting URL with token:", err);
       });
 
@@ -174,7 +174,7 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
       }
 
       // Create and configure the widget with proper options
-      widgetRef.current = new AirCredentialWidget(claimRequest, config.partnerId, {
+      widgetRef.current = new AirCredentialWidget(claimRequest, partnerId, {
         endpoint: rp?.urlWithToken,
         airKitBuildEnv: airKitBuildEnv || BUILD_ENV.STAGING,
         theme: "light", // currently only have light theme
@@ -324,13 +324,13 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Partner ID</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Partner ID (from NavBar)</label>
               <input
                 type="text"
-                value={config.partnerId}
-                onChange={(e) => handleConfigChange("partnerId", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
-                placeholder="Your partner ID"
+                value={partnerId}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+                placeholder="Partner ID from NavBar"
               />
             </div>
           </div>
@@ -421,7 +421,10 @@ const CredentialIssuance = ({ airService, isLoggedIn, airKitBuildEnv }: Credenti
           <h4 className="text-xs sm:text-sm font-medium text-gray-900 mb-1 sm:mb-2">Environment Configuration:</h4>
           <div className="text-xs text-gray-700 space-y-1">
             <p>
-              <strong>Widget Environment:</strong> {WIDGET_URL}
+              <strong>Widget URL:</strong> {environmentConfig.widgetUrl}
+            </p>
+            <p>
+              <strong>API URL:</strong> {environmentConfig.apiUrl}
             </p>
             <p>
               <strong>Theme:</strong> light
