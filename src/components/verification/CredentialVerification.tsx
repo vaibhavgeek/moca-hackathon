@@ -87,9 +87,19 @@ const CredentialVerification = ({ airService, isLoggedIn, airKitBuildEnv, partne
         programId: config.programId,
       };
 
+      const rp = await airService?.goToPartner(environmentConfig.widgetUrl).catch((err) => {
+        console.error("Error getting URL with token:", err);
+      });
+
+      if (!rp?.urlWithToken) {
+        console.warn("Failed to get URL with token. Please check your partner ID.");
+        setError("Failed to get URL with token. Please check your partner ID.");
+        setIsLoading(false);
+        return;
+      }
       // Create and configure the widget with proper options
       widgetRef.current = new AirCredentialWidget(queryRequest, partnerId, {
-        endpoint: environmentConfig.widgetUrl,
+        endpoint: rp?.urlWithToken,
         airKitBuildEnv: airKitBuildEnv || BUILD_ENV.STAGING,
         theme: "light", // currently only have light theme
         locale: LOCALE as Language,
