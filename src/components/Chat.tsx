@@ -165,44 +165,44 @@ const Chat: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv, par
   }, []);
 
   return (
-    <div className="flex-1 p-2 sm:p-4 lg:p-8">
-      <div className="w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl sm:mx-auto bg-white rounded-lg shadow-lg p-2 sm:p-6 lg:p-8">
+    <div className="flex-1 p-2 sm:p-4 lg:p-8 bg-gray-50">
+      <div className="w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl sm:mx-auto bg-white rounded-xl shadow-elegant-lg p-2 sm:p-6 lg:p-8 border border-gray-100">
         <div className="mb-4 sm:mb-6 lg:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">Chat</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#15110E] mb-2 sm:mb-4">AI Assistant Chat</h2>
           {!isVerified && (
             <p className="text-gray-600 text-sm sm:text-base">
-              Please verify your identity to start chatting.
+              Please verify your identity to access the AI assistant.
             </p>
           )}
           {isVerified && (
             <p className="text-gray-600 text-sm sm:text-base">
-              Verified as: <span className="font-semibold text-green-600">{verifiedRole === 'student' ? 'Student' : 'Teacher'}</span>
+              Verified as: <span className="font-semibold text-[#F7AD33]">{verifiedRole === 'student' ? 'Student' : 'Teacher'}</span>
             </p>
           )}
         </div>
 
         {!isLoggedIn && (
-          <div className="mt-4 p-2 sm:p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-            <p className="text-yellow-800 text-xs sm:text-base">Please connect your wallet to access the chat.</p>
+          <div className="mt-4 p-2 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-amber-800 text-xs sm:text-base font-medium">Please connect your wallet to access the chat.</p>
           </div>
         )}
 
         {isLoggedIn && !isVerified && (
           <div className="space-y-4">
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-              <p className="text-blue-800 text-sm mb-4">Choose your role to verify your identity:</p>
+            <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl shadow-md">
+              <p className="text-[#15110E] text-base font-medium mb-6">Choose your role to verify your identity:</p>
               <div className="flex space-x-4">
                 <button
                   onClick={() => handleVerification('student')}
                   disabled={verificationInProgress}
-                  className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 bg-[#F7AD33] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#e09c2e] focus:outline-none focus:ring-2 focus:ring-[#F7AD33] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                   {verificationInProgress ? "Verifying..." : "Verify as Student"}
                 </button>
                 <button
                   onClick={() => handleVerification('teacher')}
                   disabled={verificationInProgress}
-                  className="flex-1 bg-green-600 text-white px-6 py-3 rounded-md font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 bg-[#15110E] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#2a241f] focus:outline-none focus:ring-2 focus:ring-[#15110E] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 >
                   {verificationInProgress ? "Verifying..." : "Verify as Teacher"}
                 </button>
@@ -210,7 +210,7 @@ const Chat: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv, par
             </div>
 
             {verificationError && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg shadow-sm">
                 <p className="text-red-800 text-sm">{verificationError}</p>
               </div>
             )}
@@ -220,7 +220,7 @@ const Chat: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv, par
         {isVerified && (
           <div className="space-y-4">
             {/* Chat History */}
-            <div className="border border-gray-200 rounded-lg p-4 h-96 overflow-y-auto bg-gray-50">
+            <div className="border border-gray-200 rounded-xl p-4 h-96 overflow-y-auto bg-gradient-to-b from-gray-50 to-white shadow-inner">
               {chatHistory.length === 0 ? (
                 <p className="text-gray-500 text-center">No messages yet. Start a conversation!</p>
               ) : (
@@ -233,10 +233,10 @@ const Chat: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv, par
                       <div
                         className={`max-w-xs md:max-w-md px-4 py-2 rounded-lg ${
                           msg.role === 'user'
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-[#F7AD33] text-white shadow-md'
                             : msg.role === 'system'
-                            ? 'bg-gray-600 text-white'
-                            : 'bg-white border border-gray-200 text-gray-800'
+                            ? 'bg-[#15110E] text-white shadow-md'
+                            : 'bg-white border border-gray-200 text-gray-800 shadow-sm'
                         }`}
                       >
                         <p className="text-sm">{msg.message}</p>
@@ -255,12 +255,12 @@ const Chat: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv, par
                 onChange={(e) => setChatMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                 placeholder="Type your message..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7AD33] focus:border-[#F7AD33] transition-all duration-200 hover:border-gray-400"
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!chatMessage.trim()}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="bg-[#F7AD33] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#e09c2e] focus:outline-none focus:ring-2 focus:ring-[#F7AD33] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
                 Send
               </button>

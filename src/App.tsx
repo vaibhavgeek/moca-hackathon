@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation, Link } from "react-router-dom";
 import "./App.css";
 import CredentialIssuance from "./components/issuance/CredentialIssuance";
 import CredentialVerification from "./components/verification/CredentialVerification";
 import CreateIdentity from "./components/CreateIdentity";
 import ChatKafka from "./components/ChatKafka";
 import NavBarLogin from "./components/NavBarLogin";
+import HomeNew from "./components/HomeNew";
 import { AirService, BUILD_ENV, type AirEventListener, type BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 import { getEnvironmentConfig, type EnvironmentConfig } from "./config/environments";
 
@@ -21,7 +22,7 @@ const ENV_OPTIONS = [
 
 // Component to get current flow title
 const FlowTitle = () => {
-  return <span className="text-brand-600">Welcome to MocaVerse University</span>;
+  return <span className="text-[#F7AD33] font-bold">CommandHive</span>;
 };
 
 // Function to get default partner ID based on current route
@@ -70,22 +71,13 @@ function AppRoutes({
   }, [location.pathname, setPartnerId]);
 
   return (
-    <div
-      className={
-        "min-h-screen " +
-        (location.pathname.startsWith("/issue")
-          ? "bg-gradient-to-br from-blue-50 to-brand-100"
-          : location.pathname.startsWith("/verify")
-          ? "bg-gradient-to-br from-verify-50 to-verify-200"
-          : "bg-gradient-to-br from-gray-50 to-gray-200")
-      }
-    >
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-black/90 backdrop-blur-sm border-b border-gray-800 fixed top-0 left-0 right-0 z-50">
         <div className="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center h-auto sm:h-16 gap-2 sm:gap-0 py-2 sm:py-0">
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-1 sm:space-y-0 sm:space-x-6">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              <h1 className="text-xl sm:text-2xl font-bold">
                 <FlowTitle />
               </h1>
             </div>
@@ -93,14 +85,20 @@ function AppRoutes({
               {isLoggedIn && (
                 <nav className="flex flex-row space-x-2 sm:space-x-8 w-full sm:w-auto">
                   <Link
+                    to="/"
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 text-gray-300 hover:text-[#F7AD33] hover:bg-gray-800 text-center"
+                  >
+                    Home
+                  </Link>
+                  <Link
                     to="/create-identity"
-                    className="flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center"
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 text-gray-300 hover:text-[#F7AD33] hover:bg-gray-800 text-center"
                   >
                     Create Identity
                   </Link>
                   <Link
                     to="/chat"
-                    className="flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center"
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 text-gray-300 hover:text-[#F7AD33] hover:bg-gray-800 text-center"
                   >
                     Chat
                   </Link>
@@ -125,10 +123,10 @@ function AppRoutes({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main className="flex-1 pt-16">
         <Routes>
-          {/* Redirect root to /create-identity */}
-          <Route path="/" element={<Navigate to="/create-identity" replace />} />
+          {/* Home Page */}
+          <Route path="/" element={<HomeNew />} />
 
           {/* Create Identity Flow */}
           <Route
@@ -189,9 +187,9 @@ function AppRoutes({
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200">
+      <footer className="bg-[#15110E] border-t border-gray-800">
         <div className="max-w-full sm:max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
-          <p className="text-center text-gray-500 text-xs sm:text-sm">Powered by AIR Credential SDK</p>
+          <p className="text-center text-gray-300 text-xs sm:text-sm">Powered by AIR Credential SDK</p>
         </div>
       </footer>
     </div>

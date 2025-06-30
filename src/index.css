@@ -17,10 +17,25 @@ html {
   line-height: 1.5;
   font-weight: 400;
 
+  /* Brand colors */
+  --color-primary: #F7AD33; /* Amber/Gold */
+  --color-secondary: #15110E; /* Dark Brown */
+  --color-white: #FFFFFF;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  
   /* Force light theme while keeping dark mode styles for future use */
   color-scheme: light;
-  color: #213547;
-  background-color: #ffffff;
+  color: var(--color-secondary);
+  background-color: var(--color-white);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -30,11 +45,12 @@ html {
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--color-primary);
   text-decoration: inherit;
+  transition: color 0.2s ease;
 }
 a:hover {
-  color: #747bff;
+  color: var(--color-secondary);
 }
 
 body {
@@ -43,8 +59,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   /* Force light theme colors */
-  background-color: #ffffff !important;
-  color: #213547 !important;
+  background-color: var(--color-white) !important;
+  color: var(--color-secondary) !important;
 }
 
 #root {
@@ -65,39 +81,137 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #f9f9f9;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.3s ease;
 }
 button:hover {
-  border-color: #646cff;
+  background-color: var(--color-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(21, 17, 14, 0.2);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 3px solid rgba(247, 173, 51, 0.5);
+  outline-offset: 2px;
+}
+
+/* Custom utility classes */
+.bg-primary {
+  background-color: var(--color-primary);
+}
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+.text-primary {
+  color: var(--color-primary);
+}
+.text-secondary {
+  color: var(--color-secondary);
+}
+.border-primary {
+  border-color: var(--color-primary);
+}
+.border-secondary {
+  border-color: var(--color-secondary);
 }
 
 /* Keep dark mode styles for future use but override to force light mode */
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: var(--color-secondary);
+    background-color: var(--color-white);
   }
   a:hover {
-    color: #747bff;
+    color: var(--color-secondary);
   }
   button {
-    background-color: #f9f9f9;
+    background-color: var(--color-primary);
   }
 }
 
 /* Override dark mode to force light theme */
 @media (prefers-color-scheme: dark) {
   :root {
-    color: #213547 !important;
-    background-color: #ffffff !important;
+    color: var(--color-secondary) !important;
+    background-color: var(--color-white) !important;
   }
   a:hover {
-    color: #747bff !important;
+    color: var(--color-secondary) !important;
+  }
+}
+
+/* Additional custom styles */
+.shadow-elegant {
+  box-shadow: 0 4px 6px -1px rgba(21, 17, 14, 0.1), 0 2px 4px -1px rgba(21, 17, 14, 0.06);
+}
+
+.shadow-elegant-lg {
+  box-shadow: 0 10px 15px -3px rgba(21, 17, 14, 0.1), 0 4px 6px -2px rgba(21, 17, 14, 0.05);
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #f5c563 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, #2a241f 100%);
+}
+
+/* Landing page specific styles */
+.app-container {
+  @apply container mx-auto px-4 py-16 md:py-20 lg:py-24 xl:py-28 2xl:py-32;
+}
+
+.main-title {
+  @apply text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight;
+}
+
+.section-body {
+  @apply text-base md:text-lg text-gray-300;
+}
+
+.angled-left-rectangle {
+  position: relative;
+  clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+.top-right-sharp-edge-rectangle {
+  position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 3rem), 0 100%);
+}
+
+.bottom-left-sharp-edge-rectangle {
+  position: relative;
+  clip-path: polygon(0 3rem, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Custom breakpoints for landing page */
+@media (min-width: 1920px) {
+  .\32xl\:text-7xl {
+    font-size: 4.5rem;
+    line-height: 1;
+  }
+}
+
+@media (min-width: 2560px) {
+  .\33xl\:text-8xl {
+    font-size: 6rem;
+    line-height: 1;
+  }
+}
+
+@media (min-width: 3200px) {
+  .\34xl\:text-9xl {
+    font-size: 8rem;
+    line-height: 1;
+  }
+}
+
+@media (min-width: 3840px) {
+  .\35xl\:text-10xl {
+    font-size: 10rem;
+    line-height: 1;
   }
 }

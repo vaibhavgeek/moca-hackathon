@@ -1,4 +1,4 @@
-import { type ChatMessage, type KafkaChatMessage, type ChatApiResponse, type AssistantMessage } from '../types/chat';
+import {  type ChatApiResponse } from '../types/chat';
 
 const CHAT_CHANNEL = 'mcp_agent_queen';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';

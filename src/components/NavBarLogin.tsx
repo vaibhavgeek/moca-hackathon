@@ -51,7 +51,7 @@ const NavBarLogin = ({
   if (!isInitialized) {
     return (
       <div className="flex items-center">
-        <div className="animate-spin h-4 w-4 text-gray-400 mr-2">
+        <div className="animate-spin h-4 w-4 text-amber-600 mr-2">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path
@@ -61,7 +61,7 @@ const NavBarLogin = ({
             />
           </svg>
         </div>
-        <span className="text-sm text-gray-500">Initializing...</span>
+        <span className="text-sm text-gray-600">Initializing...</span>
       </div>
     );
   }
@@ -76,12 +76,12 @@ const NavBarLogin = ({
       {isLoggedIn ? (
         <div className="flex items-center space-x-2">
           <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            {userAddress && <span className="text-xs font-mono text-gray-600 px-2 py-1 rounded">{formatAddress(userAddress)}</span>}
+            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+            {userAddress && <span className="text-xs font-mono text-gray-700 px-3 py-1.5 bg-gray-50 rounded-md border border-gray-200">{formatAddress(userAddress)}</span>}
           </div>
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-2 text-gray-600 hover:text-amber-600 hover:bg-amber-100 rounded-md transition-all duration-200"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -92,7 +92,7 @@ const NavBarLogin = ({
         <button
           onClick={onLogin}
           disabled={isLoading}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
         >
           {isLoading ? (
             <>
@@ -124,21 +124,21 @@ const NavBarLogin = ({
 
       {/* Dropdown menu for logged in users */}
       {showDropdown && isLoggedIn && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-          <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
-            <div className="font-medium">AIR Wallet</div>
-            <div className="text-xs text-gray-500">Connected</div>
+        <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-elegant-lg py-1 z-50 border border-gray-100">
+          <div className="px-4 py-3 text-sm text-gray-800 border-b border-gray-100 bg-gray-50">
+            <div className="font-semibold text-gray-900">AIR Wallet</div>
+            <div className="text-xs text-amber-600 font-medium">Connected</div>
             {userAddress && (
               <div className="mt-1">
-                <div className="text-xs text-gray-500">Address:</div>
-                <div className="text-xs font-mono text-gray-700 break-all">{userAddress}</div>
+                <div className="text-xs text-gray-600">Address:</div>
+                <div className="text-xs font-mono text-gray-800 break-all bg-white px-2 py-1 rounded border border-gray-200 mt-1">{userAddress}</div>
               </div>
             )}
           </div>
-          <div className="px-4 py-2 border-b border-gray-100">
-            <div className="text-xs text-gray-500 mb-1">AIRKit Env:</div>
+          <div className="px-4 py-3 border-b border-gray-100">
+            <div className="text-xs text-gray-600 font-medium mb-2">AIRKit Environment:</div>
             <select
-              className="text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-brand-500 w-full"
+              className="text-xs px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 w-full bg-white hover:border-gray-400 transition-colors"
               value={currentEnv}
               onChange={(e) => setCurrentEnv(e.target.value)}
             >
@@ -149,7 +149,7 @@ const NavBarLogin = ({
               ))}
             </select>
           </div>
-          <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+          <button onClick={handleLogout} className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-all duration-200 font-medium">
             Disconnect
           </button>
         </div>

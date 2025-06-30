@@ -8,7 +8,7 @@ import type { EnvironmentConfig } from "../config/environments";
 // Fixed configuration values
 const FIXED_ISSUER_DID = "did:air:id:test:4P69Zb8oDeLVpSW3SHQZSQnb2R5LKFpKuDCC8zmT2T";
 const FIXED_API_KEY = "Gc8XhwIVXZOxUVOoxC7zIrOUV4qE15nEpWpAKbqU";
-const FIXED_CREDENTIAL_ID = "c21hi0g1awk7h0006193Ld";
+const FIXED_CREDENTIAL_ID = "c21hi0g09uibs00b4797FL";
 const LOCALE = import.meta.env.VITE_LOCALE || "en";
 
 interface CreateIdentityProps {
@@ -57,6 +57,9 @@ const CreateIdentity = ({ airService, isLoggedIn, airKitBuildEnv, partnerId, env
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [role, setRole] = useState<string>("student");
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [studentTeacherId, setStudentTeacherId] = useState<string>("");
   const widgetRef = useRef<AirCredentialWidget | null>(null);
 
   const generateWidget = async () => {
@@ -71,7 +74,8 @@ const CreateIdentity = ({ airService, isLoggedIn, airKitBuildEnv, partnerId, env
       }
 
       const credentialSubject: JsonDocumentObject = {
-        role: role
+        role: role,
+        user_id: studentTeacherId
       };
 
       console.log("credentialSubject", credentialSubject);
@@ -159,26 +163,67 @@ const CreateIdentity = ({ airService, isLoggedIn, airKitBuildEnv, partnerId, env
   }, []);
 
   return (
-    <div className="flex-1 p-2 sm:p-4 lg:p-8">
-      <div className="w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl sm:mx-auto bg-white rounded-lg shadow-lg p-2 sm:p-6 lg:p-8">
-        <div className="mb-4 sm:mb-6 lg:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">Create Your Identity</h2>
+    <div className="flex-1 p-2 sm:p-4 lg:p-8 bg-gray-50">
+      <div className="w-full sm:max-w-2xl md:max-w-4xl lg:max-w-6xl sm:mx-auto bg-white rounded-xl shadow-elegant-lg p-4 sm:p-6 lg:p-8 border border-gray-100">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#15110E] mb-2 sm:mb-4">Create Your Identity</h2>
           <p className="text-gray-600 text-sm sm:text-base">
-            Create your digital identity on MocaVerse University. Select your role and click the button below to get started.
+            Create your digital identity on MocaVerse University. Fill in your details and submit to get started.
           </p>
         </div>
 
-        {/* Role Selection */}
-        <div className="mb-6 sm:mb-8">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Select Your Role</label>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500"
-          >
-            <option value="student">Student</option>
-            <option value="teacher">Teacher</option>
-          </select>
+        {/* Form Section */}
+        <div className="space-y-6 mb-8">
+          {/* Name Field */}
+          <div>
+            <label className="block text-sm font-medium text-[#15110E] mb-2">Full Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your full name"
+              className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7AD33] focus:border-[#F7AD33] transition-all duration-200 hover:border-gray-400"
+            />
+          </div>
+
+          {/* Email Field */}
+          <div>
+            <label className="block text-sm font-medium text-[#15110E] mb-2">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email address"
+              className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7AD33] focus:border-[#F7AD33] transition-all duration-200 hover:border-gray-400"
+            />
+          </div>
+
+          {/* Role Selection */}
+          <div>
+            <label className="block text-sm font-medium text-[#15110E] mb-2">Select Your Role</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7AD33] focus:border-[#F7AD33] transition-all duration-200 hover:border-gray-400 bg-white"
+            >
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+            </select>
+          </div>
+
+          {/* ID Field */}
+          <div>
+            <label className="block text-sm font-medium text-[#15110E] mb-2">
+              {role === 'student' ? 'Student ID' : 'Teacher ID'}
+            </label>
+            <input
+              type="text"
+              value={studentTeacherId}
+              onChange={(e) => setStudentTeacherId(e.target.value)}
+              placeholder={`Enter your ${role} ID`}
+              className="w-full max-w-md px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F7AD33] focus:border-[#F7AD33] transition-all duration-200 hover:border-gray-400"
+            />
+          </div>
         </div>
 
         {/* Status Messages */}
@@ -198,8 +243,8 @@ const CreateIdentity = ({ airService, isLoggedIn, airKitBuildEnv, partnerId, env
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
           <button
             onClick={handleCreateIdentity}
-            disabled={isLoading || !isLoggedIn}
-            className="w-full sm:flex-1 max-w-md bg-brand-600 text-white px-4 sm:px-6 py-3 rounded-md font-medium hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={isLoading || !isLoggedIn || !name || !email || !studentTeacherId}
+            className="w-full sm:flex-1 max-w-md bg-[#F7AD33] text-white px-4 sm:px-6 py-3 rounded-lg font-medium hover:bg-[#e09c2e] focus:outline-none focus:ring-2 focus:ring-[#F7AD33] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
@@ -221,7 +266,7 @@ const CreateIdentity = ({ airService, isLoggedIn, airKitBuildEnv, partnerId, env
           {isSuccess && (
             <button
               onClick={handleReset}
-              className="w-full sm:w-auto px-4 sm:px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors"
+              className="w-full sm:w-auto px-4 sm:px-6 py-3 border border-[#15110E] text-[#15110E] rounded-lg font-medium hover:bg-[#15110E] hover:text-white focus:outline-none focus:ring-2 focus:ring-[#15110E] focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
               Reset
             </button>

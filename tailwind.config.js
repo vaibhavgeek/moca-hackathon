@@ -6,12 +6,14 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: "#eaf8fe",
-          100: "#d0effb",
-          500: "#31b2e1",
-          600: "#31b2e1",
-          700: "#2791b8",
+          50: "#fef6e7",
+          100: "#fdecd0",
+          500: "#F7AD33",
+          600: "#F7AD33",
+          700: "#e09c2e",
         },
+        primary: "#F7AD33",
+        secondary: "#15110E",
         verify: {
           50: "#e6f9f0",
           100: "#d1fae5",
