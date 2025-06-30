@@ -185,8 +185,8 @@ app.get('/api/kafka/consume', async (req, res) => {
     // Get messages from store
     const topicMessages = messageStore.get(topic) || [];
     const sortedMessages = topicMessages
-      .sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
-      .slice(-Number(limit));
+      .sort((a, b) => Number(b.timestamp) - Number(a.timestamp))
+      .slice(0, Number(limit));
 
     console.log(`📊 Returning ${sortedMessages.length} messages for topic ${topic}`);
 

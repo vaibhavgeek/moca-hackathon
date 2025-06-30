@@ -79,14 +79,21 @@ export class ChatService {
               
               // Handle assistant message format
               if (value.type === 'assistant_message') {
+                // Fix timestamp for filtered messages - use current time if timestamp is invalid
+                let timestamp = value.timestamp;
+                if (!timestamp || timestamp < 1000000000) { // Invalid timestamp (before year 2001)
+                  timestamp = Date.now() / 1000; // Use current time in seconds
+                }
+                
                 return {
                   type: 'assistant_message',
                   channel: CHAT_CHANNEL,
                   userId: 'assistant',
                   userRole: 'assistant',
-                  message: value.message || value.content, // Handle both 'message' and 'content' fields
-                  timestamp: value.timestamp ? value.timestamp * 1000 : Date.now(), // Use current time if timestamp missing
-                  messageId: `assistant_${value.timestamp ? Math.floor(value.timestamp) : Date.now()}`,
+                  content: value.content || value.message, // Prioritize 'content' field for filtered messages
+                  message: value.content || value.message, // Handle both 'message' and 'content' fields
+                  timestamp: timestamp * 1000, // Convert to milliseconds
+                  messageId: value.messageId || `assistant_${Math.floor(timestamp)}`,
                   title: value.title,
                   name: value.name,
                   serverList: value.server_list,
@@ -95,10 +102,10 @@ export class ChatService {
                 };
               }
               
-              // Handle user message format
-              if (value.type === 'user_message' || (value.content && value.metadata)) {
+              // Handle user message format (including student_message)
+              if (value.type === 'user_message' || value.type === 'student_message' || (value.content && value.metadata)) {
                 return {
-                  type: 'user',
+                  type: value.type === 'student_message' ? 'student_message' : 'user',
                   channel: value.metadata?.channel || CHAT_CHANNEL,
                   userId: value.metadata?.userId || value.sender,
                   userRole: value.metadata?.userRole || 'student',
@@ -124,7 +131,7 @@ export class ChatService {
             }
           })
           .filter((msg: any) => msg !== null)
-          .sort((a: any, b: any) => a.timestamp - b.timestamp);
+          .reverse(); // Server returns newest first, reverse to get chronological order
       }
 
       return [];

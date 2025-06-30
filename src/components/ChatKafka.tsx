@@ -143,7 +143,8 @@ const ChatKafka: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv
               role === 'student' 
                 ? 'Note: As a student, you cannot access certain restricted content including cheating materials, exam answers, or adult content.' 
                 : 'As a teacher, you have full access to all features.'
-            }`
+            }`,
+            timestamp: Date.now()
           }]);
           
           // Start polling for messages
@@ -187,14 +188,18 @@ const ChatKafka: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv
       return;
     }
 
-    // Add message to local chat history
-    setChatHistory(prev => [...prev, { 
-      role: "user", 
-      message: message,
-      timestamp: Date.now(),
-      userId: userIdRef.current,
-      userRole: verifiedRole || undefined
-    }]);
+    // For students, don't add message to chat history immediately
+    // Wait for the server response to see if it gets filtered
+    if (verifiedRole !== 'student') {
+      // Add message to local chat history only for teachers
+      setChatHistory(prev => [...prev, { 
+        role: "user", 
+        message: message,
+        timestamp: Date.now(),
+        userId: userIdRef.current,
+        userRole: verifiedRole || undefined
+      }]);
+    }
 
     try {
       // Send message to Kafka
@@ -220,44 +225,8 @@ const ChatKafka: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv
   };
 
   const startMessagePolling = () => {
-    // Initial fetch to get historical messages
-    const fetchInitialMessages = async () => {
-      if (!chatServiceRef.current) return;
-      
-      try {
-        const messages = await chatServiceRef.current.fetchMessages(10);
-        console.log('Fetched initial messages:', messages);
-        
-        // Process all messages
-        messages.forEach((msg: any) => {
-          processedMessageIds.current.add(msg.messageId);
-        });
-        
-        // Set initial chat history
-        setChatHistory(prev => {
-          const newMessages = messages.map((msg: any) => ({
-            role: msg.type === 'assistant' || msg.type === 'assistant_message' ? 'assistant' : (msg.userId === userIdRef.current ? 'user' : 'other'),
-            message: msg.content || msg.message,
-            timestamp: msg.timestamp,
-            userId: msg.userId,
-            userRole: msg.userRole,
-            title: msg.title,
-            name: msg.name,
-            serverList: msg.serverList,
-            type: msg.type,
-            filtered: msg.filtered,
-            filter_reason: msg.filter_reason
-          }));
-          
-          return [...prev, ...newMessages].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        });
-      } catch (error) {
-        console.error('Error fetching initial messages:', error);
-      }
-    };
-    
-    // Fetch initial messages
-    fetchInitialMessages();
+    // Clear processed messages when starting polling
+    processedMessageIds.current.clear();
     
     // Poll for new messages every 2 seconds
     const interval = setInterval(async () => {
@@ -266,16 +235,27 @@ const ChatKafka: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv
       try {
         const messages = await chatServiceRef.current.fetchMessages(10);
         
-        // Process new messages
+        // Process all messages and update chat history
+        const messagesToAdd: any[] = [];
+        
         messages.forEach((msg: any) => {
+          // Use the messageId from the service or generate a stable one
+          const messageId = msg.messageId || `${msg.type}_${msg.timestamp}_${msg.userId || 'system'}`;
+          
           // Skip if we've already processed this message
-          if (processedMessageIds.current.has(msg.messageId)) return;
+          if (processedMessageIds.current.has(messageId)) return;
           
-          processedMessageIds.current.add(msg.messageId);
+          // Process student_message type messages as well
+          // Remove the skip logic to ensure all messages are shown
           
-          // Add to chat history
+          processedMessageIds.current.add(messageId);
+          messagesToAdd.push(msg);
+        });
+        
+        // Add new messages to chat history
+        if (messagesToAdd.length > 0) {
           setChatHistory(prev => {
-            const newMessage = {
+            const newMessages = messagesToAdd.map(msg => ({
               role: msg.type === 'assistant' || msg.type === 'assistant_message' ? 'assistant' : (msg.userId === userIdRef.current ? 'user' : 'other'),
               message: msg.content || msg.message,
               timestamp: msg.timestamp,
@@ -287,22 +267,26 @@ const ChatKafka: React.FC<ChatProps> = ({ isLoggedIn, airService, airKitBuildEnv
               type: msg.type,
               filtered: msg.filtered,
               filter_reason: msg.filter_reason
-            };
+            }));
             
-            // Check if message already exists based on content and timestamp
-            const exists = prev.some(m => 
-              m.timestamp === newMessage.timestamp && 
-              m.message === newMessage.message &&
-              m.userId === newMessage.userId
-            );
+            // Combine with existing messages and remove duplicates
+            const combined = [...prev, ...newMessages];
+            const uniqueMessages = combined.filter((msg, index) => {
+              // Check if this message already exists in previous messages
+              const isDuplicate = combined.findIndex((m, i) => 
+                i < index && 
+                m.timestamp === msg.timestamp && 
+                m.message === msg.message &&
+                m.userId === msg.userId &&
+                m.role === msg.role
+              ) !== -1;
+              
+              return !isDuplicate;
+            });
             
-            if (!exists) {
-              return [...prev, newMessage].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-            }
-            
-            return prev;
+            return uniqueMessages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
           });
-        });
+        }
       } catch (error) {
         console.error('Error polling messages:', error);
       }
