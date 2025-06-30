@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, Link } from "react-router-dom";
 import "./App.css";
 import CredentialIssuance from "./components/issuance/CredentialIssuance";
 import CredentialVerification from "./components/verification/CredentialVerification";
+import CreateIdentity from "./components/CreateIdentity";
+import ChatKafka from "./components/ChatKafka";
 import NavBarLogin from "./components/NavBarLogin";
 import { AirService, BUILD_ENV, type AirEventListener, type BUILD_ENV_TYPE } from "@mocanetwork/airkit";
 import { getEnvironmentConfig, type EnvironmentConfig } from "./config/environments";
 
 // Get partner IDs from environment variables
-const ISSUER_PARTNER_ID = import.meta.env.VITE_ISSUER_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45";
-const VERIFIER_PARTNER_ID = import.meta.env.VITE_VERIFIER_PARTNER_ID || "66811bd6-dab9-41ef-8146-61f29d038a45";
+const ISSUER_PARTNER_ID =  "1787f1aa-8da9-42ae-9336-fe9bf2005f86";
+const VERIFIER_PARTNER_ID = "1787f1aa-8da9-42ae-9336-fe9bf2005f86";
 const enableLogging = true;
 
 const ENV_OPTIONS = [
@@ -19,15 +21,7 @@ const ENV_OPTIONS = [
 
 // Component to get current flow title
 const FlowTitle = () => {
-  const location = useLocation();
-
-  if (location.pathname === "/issue") {
-    return <span className="text-brand-600">Issuance</span>;
-  } else if (location.pathname === "/verify") {
-    return <span className="text-verify-600">Verification</span>;
-  }
-
-  return <span>AIR Credential Demo</span>;
+  return <span className="text-brand-600">Welcome to MocaVerse University</span>;
 };
 
 // Function to get default partner ID based on current route
@@ -94,36 +88,24 @@ function AppRoutes({
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
                 <FlowTitle />
               </h1>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500">Partner ID:</span>
-                <input
-                  type="text"
-                  value={partnerId}
-                  onChange={(e) => setPartnerId(e.target.value)}
-                  className="text-xs font-mono text-brand-700 bg-brand-50 px-2 py-1 rounded border border-transparent focus:border-brand-300 focus:outline-none focus:ring-1 focus:ring-brand-300 min-w-[200px]"
-                  placeholder="Enter Partner ID"
-                />
-              </div>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-8 w-full sm:w-auto">
-              <nav className="flex flex-row space-x-2 sm:space-x-8 w-full sm:w-auto">
-                <a
-                  href="/issue"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center"
-                >
-                  Issuance
-                </a>
-                <a
-                  href="/verify"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center"
-                >
-                  Verification
-                </a>
-              </nav>
+              {isLoggedIn && (
+                <nav className="flex flex-row space-x-2 sm:space-x-8 w-full sm:w-auto">
+                  <Link
+                    to="/create-identity"
+                    className="flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center"
+                  >
+                    Create Identity
+                  </Link>
+                  <Link
+                    to="/chat"
+                    className="flex-1 sm:flex-none px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors text-gray-500 hover:text-gray-700 hover:bg-gray-50 text-center"
+                  >
+                    Chat
+                  </Link>
+                </nav>
+              )}
               <div className="w-full sm:w-auto">
                 <NavBarLogin
                   isLoading={isLoading}
@@ -145,10 +127,38 @@ function AppRoutes({
       {/* Main Content */}
       <main className="flex-1">
         <Routes>
-          {/* Redirect root to /issue */}
-          <Route path="/" element={<Navigate to="/issue" replace />} />
+          {/* Redirect root to /create-identity */}
+          <Route path="/" element={<Navigate to="/create-identity" replace />} />
 
-          {/* Issuance Flow */}
+          {/* Create Identity Flow */}
+          <Route
+            path="/create-identity"
+            element={
+              <CreateIdentity
+                airService={airService}
+                isLoggedIn={isLoggedIn}
+                airKitBuildEnv={currentEnv}
+                partnerId={partnerId}
+                environmentConfig={environmentConfig}
+              />
+            }
+          />
+
+          {/* Chat Flow */}
+          <Route
+            path="/chat"
+            element={
+              <ChatKafka 
+                isLoggedIn={isLoggedIn}
+                airService={airService}
+                airKitBuildEnv={currentEnv}
+                partnerId={partnerId}
+                environmentConfig={environmentConfig}
+              />
+            }
+          />
+
+          {/* Legacy Issuance Flow */}
           <Route
             path="/issue"
             element={
@@ -162,7 +172,7 @@ function AppRoutes({
             }
           />
 
-          {/* Verification Flow */}
+          {/* Legacy Verification Flow */}
           <Route
             path="/verify"
             element={
