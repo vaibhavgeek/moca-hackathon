@@ -1,8 +1,8 @@
 import {  type ChatApiResponse } from '../types/chat';
 
 const CHAT_CHANNEL = 'mcp_agent_queen';
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
+const API_BASE_URL = 'https://moca-hackathon-production.up.railway.app/api';
+console.log("what is backend", API_BASE_URL)
 export class ChatService {
   private userId: string;
   private userRole: 'student' | 'teacher';
